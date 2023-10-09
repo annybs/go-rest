@@ -99,18 +99,20 @@ func (e Error) WithValue(name string, value any) Error {
 
 // Write writes the HTTP error to an HTTP response as plain text.
 // Additional data is omitted.
-func (e Error) Write(w http.ResponseWriter) {
+func (e Error) Write(w http.ResponseWriter) (int, error) {
+	if e.StatusCode == 0 {
+		e.StatusCode = 200
+	}
 	w.WriteHeader(e.StatusCode)
-	w.Write([]byte(e.Message))
+	return w.Write([]byte(e.Message))
 }
 
 // WriteJSON writes the HTTP error to an HTTP response as JSON.
 func (e Error) WriteJSON(w http.ResponseWriter) error {
-	statusCode := e.StatusCode
-	if statusCode == 0 {
-		statusCode = 200
+	if e.StatusCode == 0 {
+		e.StatusCode = 200
 	}
-	return WriteResponseJSON(w, statusCode, e)
+	return WriteResponseJSON(w, e.StatusCode, e)
 }
 
 // NewError creates a new REST API error.
