@@ -11,7 +11,7 @@ var (
 	ErrMovedPermanently  = NewError(http.StatusMovedPermanently, "")  // 301
 	ErrFound             = NewError(http.StatusFound, "")             // 302
 	ErrTemporaryRedirect = NewError(http.StatusTemporaryRedirect, "") // 307
-	ErrPermamentRedirect = NewError(http.StatusPermanentRedirect, "") // 308
+	ErrPermanentRedirect = NewError(http.StatusPermanentRedirect, "") // 308
 
 	ErrBadRequest       = NewError(http.StatusBadRequest, "")       // 400
 	ErrUnauthorized     = NewError(http.StatusUnauthorized, "")     // 401
@@ -31,7 +31,7 @@ var (
 // Error represents a REST API error.
 // It can be marshaled to JSON with ease and provides a standard format for printing errors and additional data.
 type Error struct {
-	StatusCode int                    `json:"statusCode"`     // HTTP status code (200, 404, 500 etc.)
+	StatusCode int                    `json:"-"`              // HTTP status code (200, 404, 500 etc.)
 	Message    string                 `json:"message"`        // Status message ("OK", "Not found", "Internal server error" etc.)
 	Data       map[string]interface{} `json:"data,omitempty"` // Optional additional data.
 }
@@ -106,7 +106,11 @@ func (e Error) Write(w http.ResponseWriter) {
 
 // WriteJSON writes the HTTP error to an HTTP response as JSON.
 func (e Error) WriteJSON(w http.ResponseWriter) error {
-	return WriteResponseJSON(w, e.StatusCode, e)
+	statusCode := e.StatusCode
+	if statusCode == 0 {
+		statusCode = 200
+	}
+	return WriteResponseJSON(w, statusCode, e)
 }
 
 // NewError creates a new REST API error.
