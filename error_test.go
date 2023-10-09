@@ -77,6 +77,54 @@ var errorTestCases = []ErrorTestCase{
 	},
 }
 
+func TestErrorIs(t *testing.T) {
+	type TestCase struct {
+		Err    error
+		Target error
+		Is     bool
+	}
+
+	testCases := []TestCase{
+		// Is any REST API error
+		{Err: Err, Target: Err, Is: true},
+		{Err: ErrNotFound, Target: Err, Is: true},
+		{Err: ErrBadGateway, Target: Err, Is: true},
+
+		// Is specific REST API error
+		{Err: ErrNotFound, Target: ErrNotFound, Is: true},
+		{Err: ErrBadGateway, Target: ErrBadGateway, Is: true},
+
+		// Is not specific REST API error
+		{Err: Err, Target: ErrNotFound},
+		{Err: Err, Target: ErrBadGateway},
+		{Err: ErrPermanentRedirect, Target: ErrNotFound},
+		{Err: ErrGatewayTimeout, Target: ErrBadGateway},
+
+		// Is not any other error
+		{Err: ErrNotFound, Target: errors.New("Not Found")},
+		{Err: ErrBadGateway, Target: errors.New("Bad Gateway")},
+
+		// Any other error is not a REST API Error
+		{Err: errors.New("Not Found"), Target: Err},
+		{Err: errors.New("Not Found"), Target: ErrNotFound},
+		{Err: errors.New("Bad Gateway"), Target: ErrBadGateway},
+	}
+
+	for i, tc := range testCases {
+		t.Logf("(%d) Testing %v against %v", i, tc.Err, tc.Target)
+
+		if errors.Is(tc.Err, tc.Target) {
+			if !tc.Is {
+				t.Errorf("%v should not equal %v", tc.Err, tc.Target)
+			}
+		} else {
+			if tc.Is {
+				t.Errorf("%v should equal %v", tc.Err, tc.Target)
+			}
+		}
+	}
+}
+
 func TestErrorWrite(t *testing.T) {
 	for i, tc := range errorTestCases {
 		t.Logf("(%d) Testing %v", i, tc.Input)
