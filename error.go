@@ -4,8 +4,32 @@ import (
 	"net/http"
 )
 
+// REST API error.
+var (
+	Err = Error{}
+
+	ErrMovedPermanently  = NewError(http.StatusMovedPermanently, "")  // 301
+	ErrFound             = NewError(http.StatusFound, "")             // 302
+	ErrTemporaryRedirect = NewError(http.StatusTemporaryRedirect, "") // 307
+	ErrPermamentRedirect = NewError(http.StatusPermanentRedirect, "") // 308
+
+	ErrBadRequest       = NewError(http.StatusBadRequest, "")       // 400
+	ErrUnauthorized     = NewError(http.StatusUnauthorized, "")     // 401
+	ErrPaymentRequired  = NewError(http.StatusPaymentRequired, "")  // 402
+	ErrForbidden        = NewError(http.StatusForbidden, "")        // 403
+	ErrNotFound         = NewError(http.StatusNotFound, "")         // 404
+	ErrMethodNotAllowed = NewError(http.StatusMethodNotAllowed, "") // 405
+	ErrNotAcceptable    = NewError(http.StatusNotAcceptable, "")    // 406
+
+	ErrInternalServerError = NewError(http.StatusInternalServerError, "") // 500
+	ErrNotImplemented      = NewError(http.StatusNotImplemented, "")      // 501
+	ErrBadGateway          = NewError(http.StatusBadGateway, "")          // 502
+	ErrServiceUnavailable  = NewError(http.StatusServiceUnavailable, "")  // 503
+	ErrGatewayTimeout      = NewError(http.StatusGatewayTimeout, "")      // 504
+)
+
 // Error represents a REST API error.
-// It can be marshaled to JSON with ease.
+// It can be marshaled to JSON with ease and provides a standard format for printing errors and additional data.
 type Error struct {
 	StatusCode int                    `json:"statusCode"`     // HTTP status code (200, 404, 500 etc.)
 	Message    string                 `json:"message"`        // Status message ("OK", "Not found", "Internal server error" etc.)
@@ -27,11 +51,8 @@ func (e Error) Error() string {
 // Is determines whether the Error is an instance of the target.
 // https://pkg.go.dev/errors#Is
 //
-// This function supports matching both any error and a specific error, based on the status code.
-// Use rest.Err (an empty error) for the former:
-//
-//	errors.Is(err, rest.Err) // True if any REST API Error
-//	errors.Is(err, rest.ErrBadRequest) // True if error is REST 400 Bad Request
+// If the target is a REST API error and specifies a status code, this function returns true if the status codes match.
+// If the target is an empty REST API error, this function always returns true.
 func (e Error) Is(target error) bool {
 	t, ok := target.(Error)
 	if !ok {
@@ -86,4 +107,16 @@ func (e Error) Write(w http.ResponseWriter) {
 // WriteJSON writes the HTTP error to an HTTP response as JSON.
 func (e Error) WriteJSON(w http.ResponseWriter) error {
 	return WriteResponseJSON(w, e.StatusCode, e)
+}
+
+// NewError creates a new REST API error.
+// If the message is empty, the standard text provided by http.StatusText is substituted.
+func NewError(statusCode int, message string) Error {
+	if len(message) == 0 {
+		message = http.StatusText(statusCode)
+	}
+	return Error{
+		StatusCode: statusCode,
+		Message:    message,
+	}
 }
