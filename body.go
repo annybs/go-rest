@@ -11,7 +11,7 @@ import (
 func ReadRequestJSON(req *http.Request, v any) error {
 	data, err := io.ReadAll(req.Body)
 	if err != nil {
-		return err
+		return ErrBadRequest.WithError(err)
 	}
 	return json.Unmarshal(data, v)
 }
