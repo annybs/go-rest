@@ -132,7 +132,7 @@ func TestErrorWrite(t *testing.T) {
 		rec := httptest.NewRecorder()
 
 		_, err := tc.Input.Write(rec)
-		if err != tc.Err {
+		if !errors.Is(err, tc.Err) {
 			t.Errorf("Expected error %v, got %v", tc.Err, err)
 		}
 		if err != nil {
@@ -163,7 +163,7 @@ func TestErrorWriteJSON(t *testing.T) {
 		rec := httptest.NewRecorder()
 
 		err := tc.Input.WriteJSON(rec)
-		if err != tc.Err {
+		if !errors.Is(err, tc.Err) {
 			t.Errorf("Expected error %v, got %v", tc.Err, err)
 		}
 		if err != nil {

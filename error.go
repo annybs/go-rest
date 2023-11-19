@@ -36,7 +36,7 @@ type Error struct {
 	Data       map[string]interface{} `json:"data,omitempty"` // Optional additional data.
 }
 
-// Error retrieves the message of a REST API Error.
+// Error retrieves the message of a REST API error.
 // If it has a "error" string attached using WithData or WithError, that message is returned.
 // Otherwise, the Error's own message is returned.
 func (e Error) Error() string {
@@ -54,14 +54,10 @@ func (e Error) Error() string {
 // If the target is a REST API error and specifies a status code, this function returns true if the status codes match.
 // If the target is an empty REST API error, this function always returns true.
 func (e Error) Is(target error) bool {
-	t, ok := target.(Error)
-	if !ok {
-		return false
+	if t, ok := target.(Error); ok {
+		return t.StatusCode == e.StatusCode || t.StatusCode == 0
 	}
-	if t.StatusCode == 0 {
-		return true
-	}
-	return t.StatusCode == e.StatusCode
+	return false
 }
 
 // WithData returns a copy of the HTTP error with the given data merged in.
