@@ -58,10 +58,8 @@ func (e Error) WithData(data map[string]interface{}) Error {
 	if e.Data == nil {
 		e.Data = map[string]any{}
 	}
-	if data != nil {
-		for key, value := range data {
-			e.Data[key] = value
-		}
+	for key, value := range data {
+		e.Data[key] = value
 	}
 	return e
 }
