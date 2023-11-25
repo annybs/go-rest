@@ -37,14 +37,7 @@ type Error struct {
 }
 
 // Error retrieves the message of a REST API error.
-// If it has a "error" string attached using WithData or WithError, that message is returned.
-// Otherwise, the Error's own message is returned.
 func (e Error) Error() string {
-	if e.Data != nil && e.Data["error"] != nil {
-		if value, ok := e.Data["error"].(string); ok {
-			return value
-		}
-	}
 	return e.Message
 }
 
@@ -73,8 +66,12 @@ func (e Error) WithData(data map[string]interface{}) Error {
 	return e
 }
 
-// WithError returns a copy of the HTTP error with the given error's message merged in to its additional data.
+// WithError returns a copy of the HTTP error with the given error added either as the Message, if it empty, or as additional data.
 func (e Error) WithError(err error) Error {
+	if e.Message == "" {
+		return e.WithMessage(err.Error())
+	}
+
 	return e.WithData(map[string]interface{}{
 		"error": err.Error(),
 	})
