@@ -1,7 +1,6 @@
 package rest
 
 import (
-	"fmt"
 	"net/http"
 )
 
@@ -22,7 +21,6 @@ func ReadBearerToken(req *http.Request) string {
 	header := req.Header.Get("authorization")
 	if len(header) > 8 {
 		bearer := header[0:7]
-		fmt.Println(bearer)
 		if bearer == "bearer " || bearer == "Bearer " {
 			return header[7:]
 		}
