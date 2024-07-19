@@ -41,4 +41,4 @@ Open <http://localhost:8000> in your browser and refresh a bunch of times to see
 
 ## License
 
-See [LICENSE.md](../LICENSE.md)
+See [LICENSE.md](./LICENSE.md)
